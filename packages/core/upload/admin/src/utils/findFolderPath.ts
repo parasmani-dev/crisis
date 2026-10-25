@@ -18,7 +18,7 @@ export const findFolderPath = (nodes: FolderNode[], targetId: number): FolderNod
     }
 
     for (const child of node.children ?? []) {
-      if (child.id != null && child.children?.length) {
+      if (child.id !== undefined && child.id !== null) {
         parents.set(child.id, node);
       }
 

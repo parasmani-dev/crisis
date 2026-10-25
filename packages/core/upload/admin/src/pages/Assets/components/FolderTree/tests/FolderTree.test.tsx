@@ -217,6 +217,12 @@ describe('FolderTree', () => {
     );
   });
 
+  it('auto-expands ancestor folders when navigating to a nested leaf', () => {
+    renderTree({ currentFolderId: 3 });
+
+    expect(screen.getByRole('button', { name: 'Leaf A1a' })).toBeInTheDocument();
+  });
+
   it('marks "Home" as the active row when currentFolderId is null', () => {
     renderTree({ currentFolderId: null });
 
