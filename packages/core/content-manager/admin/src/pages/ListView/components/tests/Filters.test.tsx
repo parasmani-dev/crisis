@@ -1,3 +1,6 @@
+import * as React from 'react';
+
+import { useAdminUsers, useQueryParams } from '@strapi/admin/strapi-admin';
 import { render as renderRTL, screen } from '@tests/utils';
 import { IntlProvider } from 'react-intl';
 
@@ -221,5 +224,103 @@ describe('ListView Filters', () => {
 
     expect(await screen.findByRole('option', { name: 'morning' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'evening' })).toBeInTheDocument();
+  });
+
+  it('fetches user details and displays user display name for "is not" ($ne) filter', () => {
+    mockPermissions = [
+      ...ARTICLE_READ_PERMISSIONS,
+      {
+        action: 'admin::users.read',
+        subject: null,
+      },
+    ];
+
+    const search = '?filters[$and][0][createdBy][id][$ne]=42';
+
+    jest.mocked(useQueryParams).mockReturnValue([
+      {
+        query: {
+          filters: {
+            $and: [
+              {
+                createdBy: {
+                  id: {
+                    $ne: '42',
+                  },
+                },
+              },
+            ],
+          },
+        },
+        rawQuery: search,
+      },
+      jest.fn(),
+    ]);
+
+    jest.mocked(useAdminUsers).mockReturnValue({
+      data: {
+        users: [
+          {
+            id: 42,
+            firstname: 'John',
+            lastname: 'Doe',
+          },
+        ],
+      },
+      isLoading: false,
+    } as unknown as ReturnType<typeof useAdminUsers>);
+
+    const userSchema = {
+      ...enumerationSchema,
+      attributes: {
+        ...enumerationSchema.attributes,
+        createdBy: {
+          type: 'relation',
+          relation: 'oneToOne',
+          target: 'admin::user',
+        },
+      },
+    } satisfies Schema;
+
+    const userLayout = {
+      ...enumerationLayout,
+      metadatas: {
+        ...enumerationLayout.metadatas,
+        createdBy: {
+          label: 'Created by',
+        },
+      },
+    } satisfies ListLayout;
+
+    renderRTL(
+      <Filters.Root schema={userSchema} layout={userLayout}>
+        <Filters.Trigger />
+        <Filters.Popover />
+        <Filters.List />
+      </Filters.Root>,
+      {
+        initialEntries: [{ search }],
+        renderOptions: {
+          wrapper: ({ children }) => (
+            <IntlProvider
+              locale="en"
+              defaultLocale="en"
+              textComponent="span"
+              messages={{
+                'components.FilterOptions.FILTER_TYPES.$ne': 'is not',
+              }}
+            >
+              {children}
+            </IntlProvider>
+          ),
+        },
+      }
+    );
+
+    expect(useAdminUsers).toHaveBeenCalledWith(
+      { filters: { id: { $in: ['42'] } } },
+      expect.anything()
+    );
+    expect(screen.getByText('Created by is not John Doe')).toBeInTheDocument();
   });
 });

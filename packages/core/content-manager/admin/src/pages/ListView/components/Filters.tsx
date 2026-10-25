@@ -44,7 +44,19 @@ const USER_FILTER_ATTRIBUTES = new Set([...CREATOR_FIELDS, 'strapi_assignee']);
  * Operators whose operand is the admin user a filter selects. Those ids are resolved to display
  * names, so the matching users have to be fetched alongside the list.
  */
-const USER_SELECTION_OPERATORS = ['$eq', '$in'];
+const USER_SELECTION_OPERATORS = new Set(['$eq', '$ne', '$in', '$notIn', '$nin']);
+
+const addSelectedId = (selected: Set<string>, id: unknown) => {
+  if (Array.isArray(id)) {
+    for (const item of id) {
+      if (item) {
+        selected.add(String(item));
+      }
+    }
+  } else if (id) {
+    selected.add(String(id));
+  }
+};
 
 const getSelectedUserIds = (
   appliedFilters: NonNullable<NonNullable<Filters.Query['filters']>['$and']>,
@@ -54,19 +66,17 @@ const getSelectedUserIds = (
 
   appliedFilters.forEach((appliedFilter) => {
     Object.entries(appliedFilter).forEach(([name, value]) => {
-      const operand = value.id;
+      const operand = value?.id;
 
-      if (!isUserAttribute(name) || typeof operand !== 'object') {
+      if (!isUserAttribute(name) || typeof operand !== 'object' || operand === null) {
         return;
       }
 
-      Object.entries(operand)
-        .filter(([operator]) => USER_SELECTION_OPERATORS.includes(operator))
-        .forEach(([, id]) => {
-          if (id) {
-            selected.add(id);
-          }
-        });
+      for (const [operator, id] of Object.entries(operand)) {
+        if (USER_SELECTION_OPERATORS.has(operator)) {
+          addSelectedId(selected, id);
+        }
+      }
     });
   });
 
