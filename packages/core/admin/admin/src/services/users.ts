@@ -91,6 +91,7 @@ const usersService = adminApi
         invalidatesTags: (_res, _err, { ids }) => [
           'LicenseLimits',
           'HomepageKeyStatistics',
+          { type: 'User' as const, id: 'LIST' },
           ...ids.map((id) => ({ type: 'User' as const, id })),
         ],
       }),

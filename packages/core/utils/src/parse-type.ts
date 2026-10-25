@@ -16,7 +16,7 @@ const parseMilliseconds = (fraction: string): string => {
     return '0'.repeat(MILLISECONDS_DIGITS);
   }
 
-  return String(Number.parseInt(digits, 10)).padStart(MILLISECONDS_DIGITS, '0');
+  return digits.padEnd(MILLISECONDS_DIGITS, '0');
 };
 
 const parseTime = (value: unknown): string => {

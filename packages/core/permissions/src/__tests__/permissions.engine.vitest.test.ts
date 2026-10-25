@@ -685,5 +685,25 @@ describe('Permissions Engine', () => {
       });
       expect(called).toEqual('beforeRegister');
     });
+
+    it('preserves existing conditions when before-register hook appends with condition.and', async () => {
+      const testPermissions = [{ action: 'read', subject: 'article', conditions: ['hasId125'] }];
+      const { ability } = await buildEngineWithAbility({
+        permissions: testPermissions,
+        engineHooks: [
+          {
+            name: 'before-register.permission',
+            fn({ condition: hookCondition }) {
+              hookCondition.and({ locale: { $in: ['en'] } });
+            },
+          },
+        ],
+      });
+
+      expect(ability.rules).toHaveLength(1);
+      expect(ability.rules[0].conditions).toEqual({
+        $and: [{ id: 125 }, { locale: { $in: ['en'] } }],
+      });
+    });
   });
 });

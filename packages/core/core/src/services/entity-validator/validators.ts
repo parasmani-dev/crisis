@@ -206,14 +206,17 @@ const countDecimals = (bound: unknown): number => {
 };
 
 /**
- * Bounds are compared with the precision the attribute declares them with, so that a
- * value is not rejected because of a rounding error the schema does not care about.
+ * Round a bound to the precision that bound itself declares, so that a rounding
+ * error the schema does not care about does not reject a value. The bound's own
+ * precision must be used: taking the coarser of the min and max precisions would
+ * truncate a decimal max to its whole-number part whenever the min is an integer
+ * (or absent), and then valid values below the real max would be rejected.
  */
 const roundToBoundsPrecision = (
   attr: Schema.Attribute.Decimal | Schema.Attribute.Float,
   value: number
 ) => {
-  const precision = Math.min(countDecimals(attr.min), countDecimals(attr.max));
+  const precision = countDecimals(value);
   const factor = 10 ** precision;
 
   return Math.round(value * factor) / factor;
