@@ -410,6 +410,12 @@ describe('Schema', () => {
       expectError({ minLength: -1, maxLength: 0 }, false);
     });
 
+    test('should not add error if maxLength is equal to minLength', () => {
+      expectError({ minLength: 1, maxLength: 1 }, false);
+      expectError({ minLength: 0, maxLength: 0 }, false);
+      expectError({ minLength: 5, maxLength: 5 }, false);
+    });
+
     test('should add error if maxLength is strictly less than minLength', () => {
       expectError({ minLength: 2, maxLength: 1 }, true);
       expectError({ minLength: 1, maxLength: 0 }, true);
