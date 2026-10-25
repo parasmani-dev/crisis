@@ -490,6 +490,22 @@ describe('Permissions Engine', () => {
     expect(ability.can('read', 'article', 'title')).toBeFalsy();
   });
 
+  it('combines multiple condition queries with $or so either condition grants access', async () => {
+    const rules: Permission[] = [
+      {
+        action: 'read',
+        subject: 'article',
+        conditions: ['hasId125', 'hasId200'],
+      },
+    ];
+
+    const { ability } = await buildEngineWithAbility({ permissions: rules });
+
+    expect(ability.can('read', subject('article', { id: 125 }))).toBe(true);
+    expect(ability.can('read', subject('article', { id: 200 }))).toBe(true);
+    expect(ability.can('read', subject('article', { id: 300 }))).toBe(false);
+  });
+
   describe('hooks', () => {
     describe('format.permission', () => {
       it('modifies permissions correctly', async () => {
