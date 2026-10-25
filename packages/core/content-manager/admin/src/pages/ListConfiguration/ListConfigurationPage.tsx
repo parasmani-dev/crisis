@@ -62,7 +62,7 @@ const ListConfiguration = () => {
        */
       const editedFields = layoutData.reduce<Record<string, FormData['layout'][number]>>(
         (acc, field) => {
-          acc[field.label] = field;
+          acc[field.name] = field;
 
           return acc;
         },
@@ -79,7 +79,7 @@ const ListConfiguration = () => {
           list: {
             ...listMeta,
             label: label || listMeta.label,
-            sortable: sortable || listMeta.sortable,
+            sortable: typeof sortable === 'boolean' ? sortable : listMeta.sortable,
           },
         };
 
