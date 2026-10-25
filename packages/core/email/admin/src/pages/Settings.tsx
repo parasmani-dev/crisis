@@ -309,7 +309,7 @@ const SettingsPage = () => {
     }
   );
 
-  const getTestAddressErrors = React.useCallback(async (body: MutationBody) => {
+  const getTestAddressErrors = React.useCallback(async (body: { email: string }) => {
     try {
       await schema.validate(body, { abortEarly: false });
 
@@ -322,11 +322,14 @@ const SettingsPage = () => {
   React.useEffect(() => {
     let isCurrent = true;
 
-    getTestAddressErrors({ to: testAddress }).then((errors) => {
+    const validateAddress = async () => {
+      const errors = await getTestAddressErrors({ email: testAddress });
       if (isCurrent) {
         setIsTestAddressValid(errors === null);
       }
-    });
+    };
+
+    validateAddress();
 
     return () => {
       isCurrent = false;
@@ -340,7 +343,7 @@ const SettingsPage = () => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const errors = await getTestAddressErrors({ to: testAddress });
+    const errors = await getTestAddressErrors({ email: testAddress });
 
     if (errors) {
       setFormErrors(errors);
