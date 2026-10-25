@@ -55,15 +55,15 @@ module.exports = ({ strapi }) => ({
     // Group by `type`, merging every controller of a type in a single write.
     const enabledByPath = role.permissions.reduce((acc, permission) => {
       const [type, controller, action] = permission.action.split('.');
-      const path = `${type}.controllers.${action}`;
+      const path = `${type}.controllers.${controller}`;
 
-      acc[path] = { ...acc[path], [controller]: { enabled: true, policy: '' } };
+      acc[path] = { ...acc[path], [action]: { enabled: true, policy: '' } };
 
       return acc;
     }, {});
 
-    Object.entries(enabledByPath).forEach(([path, controllers]) => {
-      _.set(allActions, path, { ..._.get(allActions, path), ...controllers });
+    Object.entries(enabledByPath).forEach(([path, actions]) => {
+      _.set(allActions, path, { ..._.get(allActions, path), ...actions });
     });
 
     return {
