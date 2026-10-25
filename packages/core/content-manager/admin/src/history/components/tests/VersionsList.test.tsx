@@ -66,4 +66,26 @@ describe('VersionsList', () => {
     await user.click(versions[0]);
     expect(await screen.findByText('?id=26')).toBeInTheDocument();
   });
+
+  it('does not label any version as current on older pages', async () => {
+    const MockHistoryProvider = HistoryProvider as unknown as React.ComponentType<{
+      children?: React.ReactNode;
+      page: number;
+      versions: typeof mockHistoryVersionsData.historyVersions;
+    }>;
+
+    render(
+      <MockHistoryProvider page={2} versions={mockHistoryVersionsData.historyVersions}>
+        <VersionsList />
+      </MockHistoryProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('loader')).not.toBeInTheDocument();
+    });
+
+    const versions = screen.getAllByRole('link');
+    expect(within(versions[0]).queryByText(/current/i)).not.toBeInTheDocument();
+    expect(within(versions[1]).queryByText(/current/i)).not.toBeInTheDocument();
+  });
 });

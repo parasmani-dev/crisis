@@ -140,26 +140,12 @@ const PaginationButton = ({ page, children }: PaginationButtonProps) => {
  * VersionsListItems
  * -----------------------------------------------------------------------------------------------*/
 
-/**
- * The versions are ordered by creation date, newest first, but a restore can be saved while the
- * list is open, so the newest one is resolved from the timestamps rather than from the position.
- */
-const getLatestVersionId = (versions: HistoryVersions.HistoryVersionDataResponse[]) =>
-  versions.reduce<HistoryVersions.HistoryVersionDataResponse | null>((latest, version) => {
-    if (!latest || new Date(version.createdAt) > new Date(latest.createdAt)) {
-      return version;
-    }
-
-    return latest;
-  }, null)?.id;
-
 const VersionsListItems = () => {
   const { formatMessage } = useIntl();
   const { versions, page } = useHistoryContext('VersionsListItems', (state) => ({
     versions: state.versions,
     page: state.page,
   }));
-  const latestVersionId = getLatestVersionId(versions.data);
 
   return (
     <Box flex={1} overflow="auto">
@@ -180,7 +166,7 @@ const VersionsListItems = () => {
         tag="ul"
         alignItems="stretch"
       >
-        {versions.data.map((version) => (
+        {versions.data.map((version, index) => (
           <li
             key={version.id}
             aria-label={formatMessage({
@@ -188,7 +174,10 @@ const VersionsListItems = () => {
               defaultMessage: 'Version card',
             })}
           >
-            <VersionCard version={version} isCurrent={version.id === latestVersionId} />
+            {React.createElement(VersionCard, {
+              version,
+              isCurrent: page === 1 && index === 0,
+            })}
           </li>
         ))}
       </Flex>
